@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMusic - {% block title %}App{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Range Slider */
+        input[type=range] { 
+            height: 4px; 
+            cursor: pointer; 
+            appearance: none;
+            background: transparent; /* Diatur via JS nanti */
+            border-radius: 2px; 
+        }
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            height: 12px; 
+            width: 12px; 
+            border-radius: 50%; 
+            background: #fff; 
+            margin-top: -4px; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); 
+            opacity: 0; 
+            transition: opacity 0.2s; 
+        }
+        /* Tampilkan thumb saat di-hover di area footer */
+        footer:hover input[type=range]::-webkit-slider-thumb { opacity: 1; }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 4px;
+            border-radius: 2px;
+            background: #404040; /* Warna track default */
+        }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-400 h-screen w-full flex overflow-hidden antialiased">
+
+    <!-- SIDEBAR -->
+    <aside class="w-20 lg:w-64 flex-shrink-0 border-r border-white/5 flex flex-col bg-neutral-950 z-20 transition-all duration-300">
+        <div class="h-20 flex items-center px-6 lg:px-6 justify-center lg:justify-start gap-4 border-b border-white/5">
+            <!-- Link ke halaman Profile -->
+            <a href="{{ url_for('profile') }}" class="relative group cursor-pointer block">
+                <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold text-lg overflow-hidden">
+                    {% if user.profile_pic %}
+                        {% if 'http' in user.profile_pic %}
+                            <img src="{{ user.profile_pic }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/' ~ user.profile_pic) }}" class="w-full h-full object-cover">
+                        {% endif %}
+                    {% else %}
+                        {{ user.username[0] | upper }}
+                    {% endif %}
+                </div>
+                <!-- Indikator Online -->
+                <div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-neutral-950"></div>
+            </a>
+            
+            <div class="hidden lg:block">
+                <!-- Link ke halaman Profile -->
+                <a href="{{ url_for('profile') }}" class="text-sm font-medium text-white hover:underline">{{ user.username }}</a>
+                <p class="text-xs text-neutral-500">Premium Account</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-1">
+            <a href="{{ url_for('main') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 hover:text-white transition-all group {% if request.endpoint == 'main' %}bg-white/5 text-white ring-1 ring-white/10{% endif %}">
+                <i data-lucide="home" class="w-5 h-5 stroke-[1.5]"></i>
+                <span class="hidden lg:block text-base font-medium tracking-tight">HOME</span>
+            </a>
+            
+            <a href="{{ url_for('queue_view') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 hover:text-white transition-all group {% if request.endpoint == 'queue_view' %}bg-white/5 text-white ring-1 ring-white/10{% endif %}">
+                <i data-lucide="list-music" class="w-5 h-5 stroke-[1.5]"></i>
+                <span class="hidden lg:block text-base font-medium tracking-tight">Queue</span>
+            </a>
+
+            <a href="{{ url_for('history_view') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 hover:text-white transition-all group {% if request.endpoint == 'history_view' %}bg-white/5 text-white ring-1 ring-white/10{% endif %}">
+                <i data-lucide="history" class="w-5 h-5 stroke-[1.5]"></i>
+                <span class="hidden lg:block text-base font-medium tracking-tight">History</span>
+            </a>
+            
+            <a href="{{ url_for('my_playlists') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 hover:text-white transition-all group {% if request.endpoint == 'my_playlists' or request.endpoint == 'playlist_detail' %}bg-white/5 text-white ring-1 ring-white/10{% endif %}">
+                <i data-lucide="list" class="w-5 h-5 stroke-[1.5]"></i>
+                <span class="hidden lg:block text-base font-medium tracking-tight">Playlists</span>
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-white/5">
+            <a href="{{ url_for('logout') }}" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-red-900/20 hover:text-red-400 transition-all text-sm font-medium">
+                <i data-lucide="log-out" class="w-5 h-5 stroke-[1.5]"></i>
+                <span class="hidden lg:block">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-gradient-to-br from-neutral-950 to-neutral-900/50">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- PLAYER FOOTER -->
+    <footer class="fixed bottom-0 left-0 right-0 h-24 bg-neutral-950/95 backdrop-blur-xl border-t border-white/10 z-50 px-4 lg:px-6 flex items-center justify-between shadow-[0_-1px_20px_rgba(0,0,0,0.6)]">
+        
+        <!-- Bagian Kiri: Info Lagu & Cover -->
+        <div class="flex items-center gap-4 w-1/3 min-w-[140px]">
+            <div class="w-14 h-14 bg-neutral-800 rounded-md relative overflow-hidden ring-1 ring-white/5 shadow-lg flex items-center justify-center group">
+                 {% if user.current_song and user.current_song.image %}
+                    <!-- Menampilkan Cover Lagu jika ada -->
+                    <img src="{{ url_for('static', filename='images/' ~ user.current_song.image) }}" 
+                         alt="Cover" 
+                         class="w-full h-full object-cover">
+                 {% else %}
+                    <!-- Placeholder jika tidak ada lagu atau tidak ada gambar -->
+                    <i data-lucide="music" class="w-6 h-6 stroke-[1.5] text-neutral-500"></i>
+                 {% endif %}
+            </div>
+            <div class="hidden sm:block overflow-hidden">
+                <h4 class="text-base font-medium text-white truncate max-w-[150px]">
+                    {{ user.current_song.judul if user.current_song else "Tidak ada lagu" }}
+                </h4>
+                <p class="text-xs text-neutral-500 truncate max-w-[150px]">
+                    {{ user.current_song.artis if user.current_song else "Pilih lagu untuk memutar" }}
+                </p>
+            </div>
+            
+            <!-- Tombol Like/Heart Kecil -->
+            {% if user.current_song %}
+            <button class="hidden lg:block text-neutral-500 hover:text-emerald-500 transition-colors ml-2">
+                <i data-lucide="heart" class="w-4 h-4"></i>
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Bagian Tengah: Kontrol Player & Progress Bar -->
+        <div class="flex flex-col items-center justify-center flex-1 max-w-2xl px-4">
+            <div class="flex items-center gap-6 mb-2">
+                <a href="{{ url_for('prev_song') }}" class="text-neutral-400 hover:text-white transition-colors p-1 active:scale-95"><i data-lucide="skip-back" class="w-5 h-5 stroke-[1.5] fill-current"></i></a>
+                
+                <button id="playPauseBtn" class="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg">
+                    <i data-lucide="pause" class="w-4 h-4 stroke-[1.5] fill-black ml-0.5"></i>
+                </button>
+                
+                <a href="{{ url_for('next_song') }}" class="text-neutral-400 hover:text-white transition-colors p-1 active:scale-95"><i data-lucide="skip-forward" class="w-5 h-5 stroke-[1.5] fill-current"></i></a>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full flex items-center gap-3 text-xs font-medium text-neutral-500 group font-mono">
+                <span id="currentTime" class="w-8 text-right tabular-nums">0:00</span>
+                <div class="flex-1 relative h-4 flex items-center">
+                    <input type="range" id="progressBar" min="0" max="100" value="0" class="w-full relative z-10">
+                    <!-- Progress track visual background (diatur via JS) -->
+                    <div id="progressTrack" class="absolute top-1/2 -translate-y-1/2 left-0 h-1 bg-emerald-500 rounded-full pointer-events-none" style="width: 0%;"></div>
+                </div>
+                <span id="totalTime" class="w-8 tabular-nums">{{ user.current_song.durasi if user.current_song else "0:00" }}</span>
+            </div>
+        </div>
+
+        <!-- Bagian Kanan: Volume -->
+        <div class="w-1/3 flex justify-end items-center gap-4">
+             <div class="flex items-center gap-2 group w-28 hidden md:flex">
+                <i data-lucide="volume-2" class="w-4 h-4 stroke-[1.5] text-neutral-400"></i>
+                <div class="relative flex-1 group/vol">
+                     <input type="range" min="0" max="100" value="80" class="w-full h-1 bg-neutral-600 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-0 group-hover/vol:[&::-webkit-slider-thumb]:w-3 group-hover/vol:[&::-webkit-slider-thumb]:h-3 group-hover/vol:[&::-webkit-slider-thumb]:bg-white group-hover/vol:[&::-webkit-slider-thumb]:rounded-full">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // --- SCRIPT SIMULASI PLAYER ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBar = document.getElementById('progressBar');
+            const currentTimeEl = document.getElementById('currentTime');
+            const totalTimeEl = document.getElementById('totalTime');
+            const progressTrack = document.getElementById('progressTrack');
+            
+            // Ambil durasi dari server (format "MM:SS")
+            const durationStr = "{{ user.current_song.durasi if user.current_song else '0:00' }}";
+            
+            if (durationStr === '0:00') return;
+
+            // Helper: Konversi "MM:SS" ke detik total
+            function parseTime(str) {
+                const parts = str.split(':');
+                if (parts.length < 2) return 0;
+                return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+            }
+
+            // Helper: Konversi detik ke "M:SS"
+            function formatTime(seconds) {
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            }
+
+            const totalSeconds = parseTime(durationStr);
+            let currentSeconds = 0;
+            let isPlaying = true; // Anggap auto-play
+
+            // Update Progress Bar Function
+            function updateProgress() {
+                if (!isPlaying) return;
+
+                if (currentSeconds >= totalSeconds) {
+                    currentSeconds = 0; // Loop atau stop
+                    // isPlaying = false; // Uncomment untuk stop
+                } else {
+                    currentSeconds++;
+                }
+
+                // Update Text
+                currentTimeEl.textContent = formatTime(currentSeconds);
+
+                // Update Slider Value (0-100)
+                const percent = (currentSeconds / totalSeconds) * 100;
+                progressBar.value = percent;
+                
+                // Update Warna Track (Efek Hijau)
+                // Kita gunakan linear-gradient pada input range itu sendiri agar lebih smooth
+                progressBar.style.background = `linear-gradient(to right, #10b981 ${percent}%, #404040 ${percent}%)`;
+            }
+
+            // Jalankan setiap 1 detik
+            setInterval(updateProgress, 1000);
+
+            // Inisialisasi awal slider background
+            progressBar.style.background = `linear-gradient(to right, #10b981 0%, #404040 0%)`;
+            
+            // Handle User Dragging Slider (Manual Seek)
+            progressBar.addEventListener('input', function() {
+                const val = this.value;
+                currentSeconds = Math.floor((val / 100) * totalSeconds);
+                currentTimeEl.textContent = formatTime(currentSeconds);
+                this.style.background = `linear-gradient(to right, #10b981 ${val}%, #404040 ${val}%)`;
+            });
+        });
+    </script>
+</body>
+</html>

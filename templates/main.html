@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<header class="h-20 px-8 flex items-center justify-between border-b border-white/5 bg-neutral-950/50 backdrop-blur-xl z-10 sticky top-0">
+    <h1 class="text-3xl font-bold tracking-tight text-white">Daftar Lagu</h1>
+    
+    <!-- Search Bar (Sekarang Berfungsi) -->
+    <form action="{{ url_for('main') }}" method="GET" class="relative hidden sm:block">
+        <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="Cari lagu..." 
+               class="w-64 bg-white/5 border border-white/10 text-white text-sm rounded-full py-2 pl-4 pr-10 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-neutral-500">
+        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white cursor-pointer">
+            <i data-lucide="search" class="w-4 h-4"></i>
+        </button>
+    </form>
+</header>
+
+<div class="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 pb-32">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h2 class="text-xl font-semibold text-white mb-6 border-b border-white/5 pb-2">
+        {% if request.args.get('q') %}
+            Hasil Pencarian: "{{ request.args.get('q') }}"
+        {% else %}
+            Semua Lagu
+        {% endif %}
+    </h2>
+
+    {% if not songs %}
+        <div class="flex flex-col items-center justify-center h-64 text-neutral-500 border-2 border-dashed border-neutral-800 rounded-xl bg-neutral-900/50">
+            {% if request.args.get('q') %}
+                <i data-lucide="search-x" class="w-16 h-16 mb-4 opacity-50"></i>
+                <p>Tidak ditemukan lagu dengan judul "{{ request.args.get('q') }}"</p>
+                <a href="{{ url_for('main') }}" class="text-emerald-500 hover:underline mt-2 text-sm">Reset Pencarian</a>
+            {% else %}
+                <i data-lucide="music" class="w-16 h-16 mb-4 opacity-20"></i>
+                <p>Belum ada lagu di library.</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {% for song in songs %}
+            <div class="group bg-[#181818] p-4 rounded-lg hover:bg-[#282828] transition-all duration-300 relative cursor-pointer group">
+                
+                <!-- Container Gambar -->
+                <div class="w-full aspect-square mb-4 rounded-md overflow-hidden relative shadow-lg bg-[#333]">
+                    {% if song.image %}
+                        <!-- Gambar Cover -->
+                        <img src="{{ url_for('static', filename='images/' ~ song.image) }}" 
+                             alt="{{ song.judul }}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 block"
+                             onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.style.display='flex';"> 
+                        
+                        <!-- Fallback HTML -->
+                        <div class="hidden w-full h-full items-center justify-center bg-neutral-800 absolute inset-0">
+                            <i data-lucide="music" class="w-12 h-12 text-neutral-600"></i>
+                        </div>
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center bg-neutral-800">
+                            <i data-lucide="music" class="w-12 h-12 text-neutral-600"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Tombol Play Overlay -->
+                    <a href="{{ url_for('play_song', song_id=song.id) }}" 
+                       class="absolute bottom-2 right-2 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 z-10">
+                        <i data-lucide="play" class="w-6 h-6 fill-black stroke-black ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- Info Lagu -->
+                <div class="min-h-[4rem]">
+                    <h3 class="text-white font-bold truncate text-base mb-1">{{ song.judul }}</h3>
+                    <p class="text-sm text-neutral-400 truncate hover:underline">{{ song.artis }}</p>
+                </div>
+                
+                <!-- FEATURE: Add to Queue & Playlist -->
+                <div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                    
+                    <!-- 1. Tombol Add to Queue -->
+                    <a href="{{ url_for('add_to_queue', song_id=song.id) }}" 
+                       class="p-2 bg-black/60 backdrop-blur-md rounded-full text-neutral-300 hover:text-white hover:bg-black/80 transition-colors shadow-lg" 
+                       title="Add to Queue">
+                        <i data-lucide="list-plus" class="w-5 h-5"></i>
+                    </a>
+
+                    <!-- 2. Tombol Add to Playlist (Dropdown) -->
+                    <div class="relative group/playlist">
+                        <button class="p-2 bg-black/60 backdrop-blur-md rounded-full text-neutral-300 hover:text-white hover:bg-black/80 transition-colors shadow-lg">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute top-0 right-full mr-2 w-48 bg-neutral-900 border border-white/10 rounded-lg shadow-xl overflow-hidden hidden group-hover/playlist:block z-50">
+                            <div class="px-3 py-2 border-b border-white/5 text-xs font-semibold text-neutral-500">
+                                ADD TO PLAYLIST
+                            </div>
+                            
+                            {% if playlists %}
+                                <div class="max-h-48 overflow-y-auto no-scrollbar">
+                                    {% for pl in playlists %}
+                                    <a href="{{ url_for('add_to_playlist_action', song_id=song.id, playlist_id=pl['id']) }}" 
+                                       class="block px-4 py-2 text-sm text-neutral-300 hover:bg-white/10 hover:text-white truncate transition-colors">
+                                       {{ pl['name'] }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="px-4 py-3 text-xs text-neutral-500 text-center">
+                                    Belum ada playlist
+                                </div>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('my_playlists') }}" class="block px-4 py-2 text-xs text-emerald-500 hover:bg-white/5 border-t border-white/5 text-center font-medium">
+                                + Buat Baru
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

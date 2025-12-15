@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMusic Register</title>
+    <!-- PERBAIKAN DI SINI: Gunakan url_for untuk CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-box">
+            
+            <h2 class="register-title">Create Account</h2>
+
+            <!-- Tampilkan Pesan Error/Sukses jika ada -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div style="color: #ff6b6b; margin-bottom: 15px; text-align: left; width: 100%;">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- PERBAIKAN DI SINI: Action mengarah ke fungsi register di app.py -->
+            <form action="{{ url_for('register') }}" method="post">
+                <div class="input-group">
+                    <label for="username">Username :</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email :</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password :</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <!-- (Opsional) Validasi confirm password bisa ditambahkan di app.py -->
+                
+                <button type="submit" class="confirm-button">Confirm</button>
+            </form>
+            
+            <a href="{{ url_for('login') }}" class="back-to-login-link">Back to Login</a>
+
+        </div>
+    </div>
+</body>
+</html>

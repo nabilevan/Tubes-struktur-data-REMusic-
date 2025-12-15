@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ playlist['name'] }}{% endblock %}
+
+{% block content %}
+<div class="p-8 pb-4 flex flex-col items-start bg-gradient-to-b from-neutral-900 to-neutral-950/20 shadow-xl">
+    <header class="flex items-end mb-6 w-full">
+        <div class="w-48 h-48 flex-shrink-0 mr-6 rounded-lg ring-1 ring-white/10 shadow-2xl overflow-hidden bg-neutral-800 flex items-center justify-center">
+            {% if songs and songs[0].image %}
+                <img src="{{ url_for('static', filename='images/' ~ songs[0].image) }}" alt="Playlist Cover" class="w-full h-full object-cover">
+            {% else %}
+                <i data-lucide="music" class="w-20 h-20 text-neutral-600"></i>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col justify-end h-full w-full overflow-hidden">
+            <p class="text-sm font-medium text-white/70 mb-2">PLAYLIST</p>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-none tracking-tight truncate">
+                {{ playlist['name'] }}
+            </h1>
+            
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold text-[10px] shadow-sm">
+                    {{ user.username[0] | upper }}
+                </div>
+                <span class="text-white font-bold text-sm hover:underline cursor-pointer">{{ user.username }}</span>
+                <span class="text-neutral-400 text-sm">•</span>
+                <span class="text-neutral-300 text-sm">{{ songs|length }} Lagu</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex items-center gap-6 mt-4">
+        {% if songs %}
+        <!-- PERBAIKAN: Menambahkan playlist_id ke URL -->
+        <a href="{{ url_for('play_song', song_id=songs[0].id, playlist_id=playlist['id']) }}" class="flex items-center px-6 py-3 bg-emerald-500 text-black font-bold text-sm rounded-full hover:bg-emerald-400 transition-all shadow-xl hover:scale-[1.02] active:scale-95">
+            <i data-lucide="play" class="w-5 h-5 fill-black stroke-black mr-2 ml-0.5"></i> PLAY
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex-1 overflow-y-auto no-scrollbar p-8 pt-4">
+    <div class="grid grid-cols-[30px_1fr_100px] text-xs font-semibold text-neutral-500 border-b border-white/10 pb-2 mb-2 px-4">
+        <span class="text-left">#</span>
+        <span class="text-left">TITLE</span>
+        <i data-lucide="clock" class="w-4 h-4 text-right ml-auto"></i>
+    </div>
+    
+    <div class="space-y-1">
+        {% if not songs %}
+            <div class="text-center py-10 text-neutral-500">
+                <p class="mb-2">Playlist ini kosong.</p>
+                <a href="{{ url_for('main') }}" class="text-emerald-500 hover:underline">Tambah lagu dari Home</a>
+            </div>
+        {% else %}
+            {% for song in songs %}
+            <div class="group flex items-center p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group 
+                {{ 'bg-white/10 ring-1 ring-emerald-500/50' if user.current_song and user.current_song.id == song.id else '' }}">
+                
+                <div class="w-6 text-center flex items-center justify-center">
+                    {% if user.current_song and user.current_song.id == song.id %}
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-emerald-500 fill-current"></i>
+                    {% else %}
+                        <span class="text-sm text-neutral-500 group-hover:hidden">{{ loop.index }}</span>
+                        <!-- PERBAIKAN: Menambahkan playlist_id ke URL -->
+                        <a href="{{ url_for('play_song', song_id=song.id, playlist_id=playlist['id']) }}">
+                            <i data-lucide="play" class="w-4 h-4 text-white hidden group-hover:block fill-white"></i>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-col flex-1 ml-4 overflow-hidden">
+                    <span class="text-base font-semibold truncate {{ 'text-emerald-500' if user.current_song and user.current_song.id == song.id else 'text-white' }}">
+                        {{ song.judul }}
+                    </span>
+                    <span class="text-sm {{ 'text-emerald-500/70' if user.current_song and user.current_song.id == song.id else 'text-neutral-400' }} truncate">
+                        {{ song.artis }}
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-end w-[100px] gap-4">
+                    <a href="{{ url_for('remove_from_playlist', song_id=song.id, playlist_id=playlist['id']) }}" 
+                       class="text-neutral-500 hover:text-red-500 hidden group-hover:block transition-colors"
+                       title="Hapus dari Playlist"
+                       onclick="return confirm('Hapus lagu ini dari playlist?')">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </a>
+                    <span class="text-sm text-right {{ 'text-emerald-500/70' if user.current_song and user.current_song.id == song.id else 'text-neutral-500' }}">
+                        {{ song.durasi }}
+                    </span>
+                </div>
+
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

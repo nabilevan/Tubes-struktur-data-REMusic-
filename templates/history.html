@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+<header class="h-20 px-8 flex items-center justify-between border-b border-white/5 bg-neutral-950/50 backdrop-blur-xl z-10 sticky top-0">
+    <h1 class="text-3xl font-bold tracking-tight text-white">Playback History</h1>
+</header>
+
+<div class="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-8 pb-32">
+    <h2 class="text-xl font-semibold text-white mb-6 border-b border-white/5 pb-2">Baru Diputar</h2>
+
+    <div class="space-y-1">
+        {% if not history %}
+            <p class="text-neutral-600">Belum ada riwayat lagu.</p>
+        {% else %}
+            {% for song in history %}
+            <div class="flex items-center p-2 rounded-lg hover:bg-[#1a1a1a] transition-colors group">
+                <div class="w-10 h-10 bg-neutral-800 rounded-md mr-4 flex items-center justify-center">
+                    <i data-lucide="music" class="w-5 h-5 text-neutral-600"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-base font-semibold truncate text-white">{{ song.judul }}</p>
+                    <p class="text-sm text-neutral-400 truncate">{{ song.artis }}</p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('play_song', song_id=song.id) }}" class="text-neutral-500 hover:text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Putar Ulang">
+                        <i data-lucide="repeat-2" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

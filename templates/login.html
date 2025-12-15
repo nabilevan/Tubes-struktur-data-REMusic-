@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMusic Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+   <div class="login-container">
+    <div class="logo-section">
+        <div class="music-icon-bg" style="padding: ; overflow: hidden; background: transparent;">
+            <img src="{{ url_for('static', filename='images/Logonama.jpg') }}" 
+                 alt="Logo REMusic" 
+                 class="music-icon" 
+                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        </div>
+    </div>
+
+        <div class="login-form-section">
+            <div class="login-box">
+                <h2 class="login-title">Login Account</h2>
+                
+                <!-- Tampilkan Flash Message Error -->
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div style="color: #ff6b6b; margin-bottom: 10px;">{{ messages[0] }}</div>
+                  {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('login') }}" method="post">
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="masuk-button">Masuk</button>
+                </form>
+                <a href="{{ url_for('register') }}" class="forgot-password-link">Create account</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

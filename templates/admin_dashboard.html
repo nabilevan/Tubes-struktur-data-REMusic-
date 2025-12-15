@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMusic - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-neutral-950 text-neutral-400 h-screen w-full flex antialiased font-[Inter]">
+
+    <aside class="w-64 border-r border-white/5 bg-neutral-950 flex flex-col">
+        <div class="h-20 flex items-center px-6 gap-3 border-b border-white/5">
+             <div>
+                <p class="text-white font-bold">Admin Dasboard</p>
+             </div>
+        </div>
+        <nav class="flex-1 p-4">
+             <a href="#" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-emerald-900/30 text-emerald-400">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/5">
+             <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-3 py-3 hover:text-white">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-[#121212] overflow-hidden">
+        <header class="h-20 px-8 flex items-center justify-between border-b border-white/5">
+            <h1 class="text-2xl font-bold text-white">Manage Songs</h1>
+            <a href="{{ url_for('add_song') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Tambah Lagu
+            </a>
+        </header>
+
+        <div class="p-8 overflow-y-auto">
+            <div class="bg-[#1a1a1a] rounded-xl border border-white/10 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-neutral-800 text-white text-sm uppercase">
+                        <tr>
+                            <th class="py-3 px-4">ID</th>
+                            <th class="py-3 px-4">Judul</th>
+                            <th class="py-3 px-4">Artis</th>
+                            <th class="py-3 px-4">Durasi</th>
+                            <th class="py-3 px-4 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-white/5 text-neutral-300">
+                        {% for song in songs %}
+                        <tr class="hover:bg-neutral-800/50">
+                            <td class="py-3 px-4">{{ song.id }}</td>
+                            <td class="py-3 px-4 text-white font-medium">{{ song.judul }}</td>
+                            <td class="py-3 px-4">{{ song.artis }}</td>
+                            <td class="py-3 px-4">{{ song.durasi }}</td>
+                            <td class="py-3 px-4 text-right">
+                                <a href="{{ url_for('delete_song', song_id=song.id) }}" class="text-red-500 hover:text-red-400" onclick="return confirm('Hapus lagu ini?')">
+                                    <i data-lucide="trash-2" class="w-4 h-4 inline"></i>
+                                </a> <a href="{{ url_for('edit_song', song_id=song.id) }}" class="text-blue-500 hover:text-red-400" onclick="return confirm('Edit lagu ini?')">
+                                    <i data-lucide="pencil" class="w-4 h-4 inline"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
